@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: "고객 차원 테이블 - 고객 정보 및 구매 통계 통합"
+    columns:
+      - name: customer_id
+        tests: [unique, not_null]
+      - name: customer_name
+        tests: [not_null]
+      - name: customer_grade
+        tests:
+          - accepted_values:
+              values: ['VIP', '골드', '실버', '브론즈', '신규']
+      - name: lifetime_value
+        description: "총 구매 금액 (취소/환불 제외)"
+      - name: total_orders
+        description: "완료된 주문 건수"
+
+  - name: fct_orders
+    description: "주문 팩트 테이블 - 고객/상품 정보 통합 완성형"
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: revenue_amount
+        description: "매출 인식 금액 (completed 주문만)"
+      - name: gross_profit
+        description: "매출총이익 = 매출 - 원가"
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['completed', 'cancelled', 'refunded', 'pending']
+
+  - name: monthly_sales
+    description: "월별 카테고리/지역별 매출 집계 - Superset 대시보드용"
+    columns:
+      - name: year_month
+        description: "연월 (YYYY-MM 형식)"
+        tests: [not_null]
+      - name: total_revenue
+        description: "월 총 매출"
+      - name: gross_margin_rate
+        description: "매출총이익률 (%)"
+      - name: mom_growth_rate
+        description: "전월 대비 매출 성장률 (%)"

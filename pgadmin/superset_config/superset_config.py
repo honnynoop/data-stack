@@ -1,0 +1,32 @@
+import os
+
+SECRET_KEY = os.getenv("SUPERSET_SECRET_KEY", "supersetSECRETkey_mds_2024_xK9mN")
+SQLALCHEMY_DATABASE_URI = os.getenv(
+    "SUPERSET_DATABASE_URI",
+    "postgresql+psycopg2://airflow:airflow@postgres:5432/superset"
+)
+
+WTF_CSRF_ENABLED = True
+WTF_CSRF_TIME_LIMIT = 60 * 60 * 24 * 365
+
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE   = False
+
+FEATURE_FLAGS = {
+    "ENABLE_TEMPLATE_PROCESSING": True,
+    "DASHBOARD_NATIVE_FILTERS": True,
+    "EMBEDDED_SUPERSET": True,
+}
+
+PREVENT_UNSAFE_DB_CONNECTIONS = False
+
+CACHE_CONFIG = {
+    "CACHE_TYPE": "FileSystemCache",
+    "CACHE_DIR": "/app/superset_home/cache",
+    "CACHE_DEFAULT_TIMEOUT": 300,
+}
+DATA_CACHE_CONFIG = CACHE_CONFIG
+
+SQL_MAX_ROW = 100000
+ROW_LIMIT    = 50000
+LOG_LEVEL    = "INFO"

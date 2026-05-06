@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDS Portal — Modern Data Stack</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@300;400;500;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0d0f14; --bg2:#13161d; --bg3:#1a1e28;
+    --border:#252a38; --border2:#2e3547;
+    --text:#e2e8f5; --muted:#6b7599;
+    --accent:#4f8fff; --accent2:#7c6bff;
+    --green:#34d399; --amber:#fbbf24; --red:#f87171;
+    --mono:'IBM Plex Mono',monospace;
+    --sans:'IBM Plex Sans KR',sans-serif;
+  }
+  body { background:var(--bg); color:var(--text); font-family:var(--sans); min-height:100vh; overflow-x:hidden; }
+
+  header {
+    border-bottom:1px solid var(--border); padding:0 2.5rem; height:60px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; background:var(--bg); z-index:100;
+  }
+  .logo { display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:15px; font-weight:500; }
+  .logo-badge {
+    background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;
+    font-size:10px; font-weight:500; padding:2px 8px; border-radius:4px; text-transform:uppercase; letter-spacing:.08em;
+  }
+  .header-right { display:flex; align-items:center; gap:16px; }
+  .refresh-btn {
+    background:var(--bg3); border:1px solid var(--border2); color:var(--muted);
+    font-family:var(--mono); font-size:12px; padding:6px 14px; border-radius:6px; cursor:pointer; transition:all .2s;
+  }
+  .refresh-btn:hover { color:var(--text); border-color:var(--accent); }
+  .clock { font-family:var(--mono); font-size:13px; color:var(--muted); }
+
+  main { max-width:1200px; margin:0 auto; padding:3rem 2.5rem; }
+
+  .section-label {
+    font-family:var(--mono); font-size:11px; color:var(--muted);
+    letter-spacing:.12em; text-transform:uppercase;
+    margin-bottom:1.25rem; display:flex; align-items:center; gap:8px;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* 서비스 카드 */
+  .services-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-bottom:3rem; }
+  .service-card {
+    background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.5rem;
+    color:inherit; display:block; position:relative; overflow:hidden; transition:border-color .2s,transform .2s; cursor:pointer;
+  }
+  .service-card::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(135deg,var(--card-color1,transparent) 0%,transparent 60%);
+    opacity:0; transition:opacity .3s;
+  }
+  .service-card:hover { border-color:var(--border2); transform:translateY(-2px); }
+  .service-card:hover::before { opacity:1; }
+  .card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; }
+  .card-icon {
+    width:44px; height:44px; border-radius:10px; background:var(--icon-bg,var(--bg3));
+    border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:22px;
+  }
+  .status-wrap { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+  .status-dot { width:8px; height:8px; border-radius:50%; background:var(--amber); transition:background .4s; }
+  .status-dot.up   { background:var(--green); box-shadow:0 0 8px rgba(52,211,153,.4); }
+  .status-dot.down { background:var(--red); }
+  .status-text { font-family:var(--mono); font-size:10px; color:var(--muted); white-space:nowrap; }
+  .status-text.up   { color:var(--green); }
+  .status-text.down { color:var(--red); }
+  .card-title { font-size:16px; font-weight:500; margin-bottom:4px; }
+  .card-desc { font-size:13px; color:var(--muted); line-height:1.55; margin-bottom:1.25rem; }
+  .card-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+  .card-port { font-family:var(--mono); font-size:12px; color:var(--muted); background:var(--bg3); border:1px solid var(--border); padding:3px 10px; border-radius:5px; }
+  .card-meta { font-family:var(--mono); font-size:11px; color:var(--muted); }
+  .card-btn { display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; font-size:13px; font-weight:500; padding:7px 16px; border-radius:8px; text-decoration:none; transition:opacity .2s; }
+  .card-btn:hover { opacity:.85; }
+
+  /* 파이프라인 */
+  .pipeline-row { display:flex; align-items:center; margin-bottom:3rem; overflow-x:auto; padding-bottom:4px; }
+  .pipeline-step { flex-shrink:0; background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:.75rem 1.25rem; text-align:center; min-width:110px; }
+  .ps-icon { font-size:20px; margin-bottom:4px; }
+  .ps-label { font-size:11px; font-weight:500; color:var(--text); display:block; }
+  .ps-sub { font-family:var(--mono); font-size:10px; color:var(--muted); display:block; margin-top:2px; }
+  .pipeline-arrow { flex-shrink:0; color:var(--muted); font-size:18px; padding:0 6px; }
+
+  /* 진단 패널 */
+  .diag-panel { background:var(--bg2); border:1px solid var(--border); border-radius:10px; margin-bottom:3rem; overflow:hidden; }
+  .diag-header { padding:.9rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .diag-header h3 { font-size:14px; font-weight:500; }
+  .run-btn {
+    background:rgba(79,143,255,.15); border:1px solid rgba(79,143,255,.3); color:var(--accent);
+    font-family:var(--mono); font-size:12px; padding:5px 14px; border-radius:6px; cursor:pointer; transition:all .2s;
+  }
+  .run-btn:hover { background:rgba(79,143,255,.25); }
+  .diag-body { padding:1rem 1.25rem; }
+  .diag-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.65rem 0; border-bottom:1px solid var(--border); font-size:13px;
+  }
+  .diag-row:last-child { border-bottom:none; }
+  .diag-name { color:var(--text); display:flex; flex-direction:column; gap:3px; }
+  .diag-url { font-family:var(--mono); font-size:10px; color:var(--muted); }
+  .diag-result {
+    font-family:var(--mono); font-size:12px; padding:4px 14px; border-radius:6px;
+    border:1px solid var(--border); background:var(--bg3); color:var(--muted);
+    min-width:110px; text-align:center; transition:all .3s; flex-shrink:0;
+  }
+  .diag-result.ok       { background:rgba(52,211,153,.1); border-color:rgba(52,211,153,.3); color:var(--green); }
+  .diag-result.fail     { background:rgba(248,113,113,.1); border-color:rgba(248,113,113,.3); color:var(--red); }
+  .diag-result.checking { color:var(--amber); border-color:rgba(251,191,36,.3); }
+
+  /* 포트 테이블 */
+  .port-table { width:100%; border-collapse:collapse; font-size:14px; margin-bottom:3rem; }
+  .port-table th { text-align:left; padding:.6rem 1rem; border-bottom:1px solid var(--border); font-size:11px; font-weight:500; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; font-family:var(--mono); }
+  .port-table td { padding:.75rem 1rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+  .port-table tr:last-child td { border-bottom:none; }
+  .port-table tr:hover td { background:var(--bg3); }
+  .port-tag { font-family:var(--mono); font-size:12px; background:var(--bg3); border:1px solid var(--border2); padding:2px 10px; border-radius:5px; color:var(--accent); }
+
+  /* Superset 가이드 */
+  .guide-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; margin-bottom:3rem; overflow:hidden; }
+  .guide-card-header { padding:1rem 1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+  .guide-card-header h3 { font-size:14px; font-weight:500; }
+  .guide-body { padding:1.25rem; }
+  .step-list { list-style:none; }
+  .step-list li { display:flex; gap:12px; align-items:flex-start; padding:.65rem 0; border-bottom:1px solid var(--border); font-size:13px; line-height:1.65; color:#b0bed8; }
+  .step-list li:last-child { border-bottom:none; }
+  .step-num { flex-shrink:0; width:22px; height:22px; border-radius:50%; background:rgba(79,143,255,.15); border:1px solid rgba(79,143,255,.3); color:var(--accent); font-family:var(--mono); font-size:11px; display:flex; align-items:center; justify-content:center; margin-top:2px; }
+  code { background:var(--bg3); border:1px solid var(--border2); padding:1px 7px; border-radius:4px; font-family:var(--mono); font-size:12px; color:var(--accent); }
+
+  /* SQL */
+  .queries-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:3rem; }
+  @media(max-width:700px){ .queries-grid{grid-template-columns:1fr;} }
+  .query-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .query-card-header { padding:.75rem 1rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .query-card-title { font-size:13px; font-weight:500; }
+  .copy-btn { background:none; border:none; color:var(--muted); font-size:12px; cursor:pointer; font-family:var(--mono); padding:3px 8px; border-radius:4px; transition:all .2s; }
+  .copy-btn:hover { background:var(--bg3); color:var(--text); }
+  pre { font-family:var(--mono); font-size:12px; line-height:1.65; color:#a5b4d0; padding:1rem; overflow-x:auto; white-space:pre; }
+  .kw{color:#7c9eff;} .fn{color:#c084fc;} .sc{color:#34d399;}
+
+  .info-banner { background:rgba(79,143,255,.08); border:1px solid rgba(79,143,255,.25); border-radius:10px; padding:1rem 1.25rem; margin-bottom:2rem; font-size:13px; color:#93b4ff; display:flex; align-items:flex-start; gap:10px; line-height:1.6; }
+
+  footer { border-top:1px solid var(--border); padding:1.5rem 2.5rem; text-align:center; font-size:12px; color:var(--muted); font-family:var(--mono); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="7" fill="url(#lg)"/>
+      <path d="M7 14h5l2-5 2 10 2-5h3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#4f8fff"/><stop offset="1" stop-color="#7c6bff"/></linearGradient></defs>
+    </svg>
+    MDS Portal
+    <span class="logo-badge">Local Dev</span>
+  </div>
+  <div class="header-right">
+    <span class="clock" id="clock">--:--:--</span>
+    <button class="refresh-btn" onclick="runAllChecks()">⟳ 상태 새로고침</button>
+  </div>
+</header>
+
+<main>
+
+  <div class="info-banner">
+    <span>ℹ</span>
+    <span>상태 확인은 <strong>Nginx 서버 사이드 proxy_pass</strong> 경유 → 브라우저 CORS 제한 없이 실제 컨테이너 연결 상태를 반영합니다.
+    Superset은 초기 DB 마이그레이션으로 <strong>3~5분</strong> 소요될 수 있습니다.</span>
+  </div>
+
+  <!-- 파이프라인 -->
+  <div class="section-label">Data Pipeline Flow</div>
+  <div class="pipeline-row">
+    <div class="pipeline-step"><div class="ps-icon">🐘</div><span class="ps-label">PostgreSQL</span><span class="ps-sub">raw 스키마</span></div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step"><div class="ps-icon">🔄</div><span class="ps-label">dbt Staging</span><span class="ps-sub">정제·표준화</span></div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step"><div class="ps-icon">🏪</div><span class="ps-label">dbt Marts</span><span class="ps-sub">비즈니스 집계</span></div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step"><div class="ps-icon">📊</div><span class="ps-label">Superset</span><span class="ps-sub">시각화</span></div>
+    <div class="pipeline-arrow">&nbsp;↑&nbsp;</div>
+    <div class="pipeline-step" style="background:rgba(79,143,255,.08);border-color:rgba(79,143,255,.3)">
+      <div class="ps-icon">🌀</div><span class="ps-label">Airflow</span><span class="ps-sub">오케스트레이션</span>
+    </div>
+  </div>
+
+  <!-- 서비스 카드 -->
+  <div class="section-label">Services</div>
+  <div class="services-grid">
+    <div class="service-card" style="--card-color1:rgba(79,143,255,.06)" onclick="window.open('http://localhost:8080','_blank')">
+      <div class="card-header">
+        <div class="card-icon" style="--icon-bg:#0d1929">🌀</div>
+        <div class="status-wrap"><div class="status-dot" id="dot-airflow"></div><span class="status-text" id="txt-airflow">확인중</span></div>
+      </div>
+      <div class="card-title">Apache Airflow</div>
+      <div class="card-desc">DAG 스케줄러 &amp; ELT 파이프라인 오케스트레이션. elt_pipeline을 Trigger하세요.</div>
+      <div class="card-footer">
+        <span class="card-port">:8080</span>
+        <span class="card-meta">admin / admin</span>
+        <a class="card-btn" href="http://localhost:8080" target="_blank">열기 →</a>
+      </div>
+    </div>
+    <div class="service-card" style="--card-color1:rgba(124,107,255,.06)" onclick="window.open('http://localhost:5050','_blank')">
+      <div class="card-header">
+        <div class="card-icon" style="--icon-bg:#150d29">🐘</div>
+        <div class="status-wrap"><div class="status-dot" id="dot-pgadmin"></div><span class="status-text" id="txt-pgadmin">확인중</span></div>
+      </div>
+      <div class="card-title">pgAdmin 4</div>
+      <div class="card-desc">PostgreSQL 웹 관리 도구. 접속하면 <strong>MDS-PostgreSQL</strong> 서버가 자동 등록됩니다.</div>
+      <div class="card-footer">
+        <span class="card-port">:5050</span>
+        <span class="card-meta">admin@example.com / admin</span>
+        <a class="card-btn" href="http://localhost:5050" target="_blank">열기 →</a>
+      </div>
+    </div>
+    <div class="service-card" style="--card-color1:rgba(52,211,153,.06)" onclick="window.open('http://localhost:8088','_blank')">
+      <div class="card-header">
+        <div class="card-icon" style="--icon-bg:#0a1f14">📊</div>
+        <div class="status-wrap"><div class="status-dot" id="dot-superset"></div><span class="status-text" id="txt-superset">확인중</span></div>
+      </div>
+      <div class="card-title">Apache Superset</div>
+      <div class="card-desc">BI 대시보드. 초기 기동 후 아래 "연결 방법"으로 marts 데이터소스를 추가하세요.</div>
+      <div class="card-footer">
+        <span class="card-port">:8088</span>
+        <span class="card-meta">admin / admin</span>
+        <a class="card-btn" href="http://localhost:8088" target="_blank">열기 →</a>
+      </div>
+    </div>
+    <div class="service-card">
+      <div class="card-header">
+        <div class="card-icon" style="--icon-bg:#1a1500">💾</div>
+        <div class="status-wrap"><div class="status-dot up"></div><span class="status-text up">실행중</span></div>
+      </div>
+      <div class="card-title">PostgreSQL 15</div>
+      <div class="card-desc">raw / staging / marts 3개 스키마. 고객 30명, 상품 25개, 주문 120건, 마케팅 지출 36건.</div>
+      <div class="card-footer">
+        <span class="card-port">:5432</span>
+        <span class="card-meta">airflow / airflow @ airflow</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 진단 패널 -->
+  <div class="section-label">Service Diagnostics</div>
+  <div class="diag-panel">
+    <div class="diag-header">
+      <h3>헬스체크 — Nginx proxy_pass 경유 (서버 사이드)</h3>
+      <button class="run-btn" onclick="runAllChecks()">▶ 전체 실행</button>
+    </div>
+    <div class="diag-body">
+      <div class="diag-row">
+        <div class="diag-name">
+          🌀 Airflow Webserver
+          <span class="diag-url">GET /health/airflow → nginx → airflow-webserver:8080/health</span>
+        </div>
+        <div class="diag-result checking" id="res-airflow">대기중</div>
+      </div>
+      <div class="diag-row">
+        <div class="diag-name">
+          🐘 pgAdmin 4
+          <span class="diag-url">GET /health/pgadmin → nginx → pgadmin:80/misc/ping</span>
+        </div>
+        <div class="diag-result checking" id="res-pgadmin">대기중</div>
+      </div>
+      <div class="diag-row">
+        <div class="diag-name">
+          📊 Apache Superset
+          <span class="diag-url">GET /health/superset → nginx → superset:8088/health</span>
+        </div>
+        <div class="diag-result checking" id="res-superset">대기중</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 포트 요약 -->
+  <div class="section-label">Port & Credentials</div>
+  <table class="port-table">
+    <thead><tr><th>서비스</th><th>URL</th><th>ID</th><th>PW</th><th>상태</th></tr></thead>
+    <tbody>
+      <tr><td>서비스 포털</td><td><span class="port-tag">localhost:80</span></td><td>—</td><td>—</td><td><span style="color:var(--green);font-family:var(--mono);font-size:12px">● 실행중</span></td></tr>
+      <tr><td>Apache Airflow</td><td><a href="http://localhost:8080" target="_blank" style="color:var(--accent);font-family:var(--mono);font-size:13px">localhost:8080</a></td><td>admin</td><td>admin</td><td><span id="tbl-airflow" style="font-size:12px;font-family:var(--mono);color:var(--amber)">● 확인중</span></td></tr>
+      <tr><td>pgAdmin 4</td><td><a href="http://localhost:5050" target="_blank" style="color:var(--accent);font-family:var(--mono);font-size:13px">localhost:5050</a></td><td>admin@example.com</td><td>admin</td><td><span id="tbl-pgadmin" style="font-size:12px;font-family:var(--mono);color:var(--amber)">● 확인중</span></td></tr>
+      <tr><td>Apache Superset</td><td><a href="http://localhost:8088" target="_blank" style="color:var(--accent);font-family:var(--mono);font-size:13px">localhost:8088</a></td><td>admin</td><td>admin</td><td><span id="tbl-superset" style="font-size:12px;font-family:var(--mono);color:var(--amber)">● 확인중</span></td></tr>
+      <tr><td>PostgreSQL</td><td><span class="port-tag">localhost:5432</span></td><td>airflow</td><td>airflow</td><td><span style="color:var(--green);font-family:var(--mono);font-size:12px">● 실행중</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- Superset 연결 방법 -->
+  <div class="section-label">Superset — 데이터소스 연결 방법</div>
+  <div class="guide-card">
+    <div class="guide-card-header"><span style="font-size:18px">📊</span><h3>PostgreSQL 연결 &amp; 차트 생성 순서</h3></div>
+    <div class="guide-body">
+      <ol class="step-list">
+        <li><span class="step-num">1</span><span><a href="http://localhost:8088" target="_blank" style="color:var(--accent)">localhost:8088</a> 접속 → <strong style="color:var(--text)">admin / admin</strong> 로그인</span></li>
+        <li><span class="step-num">2</span><span>상단 <strong style="color:var(--text)">Settings → Database Connections → + Database</strong></span></li>
+        <li><span class="step-num">3</span><span>유형 <strong style="color:var(--text)">PostgreSQL</strong> 선택 후 URI 입력:<br><code>postgresql+psycopg2://airflow:airflow@postgres:5432/airflow</code></span></li>
+        <li><span class="step-num">4</span><span><strong style="color:var(--text)">Test Connection</strong> → <em style="color:var(--green)">"Connection looks good!"</em> → <strong style="color:var(--text)">Connect → Finish</strong></span></li>
+        <li><span class="step-num">5</span><span><strong style="color:var(--text)">Datasets → + Dataset</strong> · Database: <code>airflow</code> · Schema: <code>marts</code> · Table 선택 후 저장</span></li>
+        <li><span class="step-num">6</span><span><strong style="color:var(--text)">Charts → + Chart</strong> → Dataset 선택 → 차트 유형 선택 → 생성</span></li>
+        <li><span class="step-num">7</span><span><strong style="color:var(--text)">Dashboards → + Dashboard</strong>에 차트 드래그&amp;드롭</span></li>
+      </ol>
+      <div style="margin-top:1rem;padding:1rem;background:var(--bg3);border-radius:8px;font-size:12px;color:var(--muted)">
+        💡 권장 Dataset: <code>marts.fct_orders</code> · <code>marts.monthly_sales</code> · <code>marts.dim_customers</code> · <code>marts.marketing_roi</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- SQL 쿼리 -->
+  <div class="section-label">Quick Queries — pgAdmin에서 복사 실행</div>
+  <div class="queries-grid">
+    <div class="query-card">
+      <div class="query-card-header"><span class="query-card-title">📊 월별 매출 요약</span><button class="copy-btn" onclick="copyQuery(this)">copy</button></div>
+      <pre><span class="kw">SELECT</span>
+  year_month,
+  <span class="fn">SUM</span>(total_revenue)     <span class="kw">AS</span> 매출,
+  <span class="fn">SUM</span>(order_count)       <span class="kw">AS</span> 주문수,
+  <span class="fn">SUM</span>(unique_customers)  <span class="kw">AS</span> 구매고객,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(gross_margin_rate),1) <span class="kw">AS</span> 이익률
+<span class="kw">FROM</span> <span class="sc">marts.monthly_sales</span>
+<span class="kw">GROUP BY</span> year_month
+<span class="kw">ORDER BY</span> year_month;</pre>
+    </div>
+    <div class="query-card">
+      <div class="query-card-header"><span class="query-card-title">👥 고객 RFM 등급 분포</span><button class="copy-btn" onclick="copyQuery(this)">copy</button></div>
+      <pre><span class="kw">SELECT</span>
+  customer_grade   <span class="kw">AS</span> 등급,
+  <span class="fn">COUNT</span>(*)           <span class="kw">AS</span> 고객수,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(rfm_total),1) <span class="kw">AS</span> 평균RFM,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(lifetime_value),0) <span class="kw">AS</span> 평균LTV
+<span class="kw">FROM</span> <span class="sc">marts.dim_customers</span>
+<span class="kw">GROUP BY</span> customer_grade
+<span class="kw">ORDER BY</span> 평균LTV <span class="kw">DESC</span>;</pre>
+    </div>
+    <div class="query-card">
+      <div class="query-card-header"><span class="query-card-title">🏷️ 카테고리별 매출·마진</span><button class="copy-btn" onclick="copyQuery(this)">copy</button></div>
+      <pre><span class="kw">SELECT</span>
+  category,
+  <span class="fn">COUNT</span>(*)             <span class="kw">AS</span> 주문수,
+  <span class="fn">SUM</span>(revenue_amount)  <span class="kw">AS</span> 총매출,
+  <span class="fn">SUM</span>(gross_profit)    <span class="kw">AS</span> 총이익,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(
+    gross_profit::numeric
+    /<span class="fn">NULLIF</span>(revenue_amount,0)
+  )*100,1)             <span class="kw">AS</span> 마진율
+<span class="kw">FROM</span> <span class="sc">marts.fct_orders</span>
+<span class="kw">WHERE</span> is_revenue = <span class="kw">true</span>
+<span class="kw">GROUP BY</span> category
+<span class="kw">ORDER BY</span> 총매출 <span class="kw">DESC</span>;</pre>
+    </div>
+    <div class="query-card">
+      <div class="query-card-header"><span class="query-card-title">📣 채널별 ROAS / CAC</span><button class="copy-btn" onclick="copyQuery(this)">copy</button></div>
+      <pre><span class="kw">SELECT</span>
+  channel          <span class="kw">AS</span> 채널,
+  <span class="fn">SUM</span>(total_spend)  <span class="kw">AS</span> 총광고비,
+  <span class="fn">SUM</span>(new_customers)<span class="kw">AS</span> 신규고객,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(roas),2) <span class="kw">AS</span> 평균ROAS,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(cac),0)  <span class="kw">AS</span> 평균CAC
+<span class="kw">FROM</span> <span class="sc">marts.marketing_roi</span>
+<span class="kw">GROUP BY</span> channel
+<span class="kw">ORDER BY</span> 총광고비 <span class="kw">DESC</span>;</pre>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Modern Data Stack — PostgreSQL · dbt · Airflow · Superset · pgAdmin &nbsp;|&nbsp; 헬스체크: Nginx proxy_pass → Docker 내부망
+</footer>
+
+<script>
+  // 시계
+  function updateClock() {
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString('ko-KR');
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ──────────────────────────────────────────────────────
+  // 헬스체크: 브라우저 → nginx /health/XXX → 컨테이너 내부
+  // 브라우저 CORS / Private Network Access 정책 완전 우회
+  // ──────────────────────────────────────────────────────
+  const SERVICES = [
+    { id: 'airflow',  path: '/health/airflow'  },
+    { id: 'pgadmin',  path: '/health/pgadmin'  },
+    { id: 'superset', path: '/health/superset' },
+  ];
+
+  function setStatus(id, state) {
+    const dot = document.getElementById('dot-' + id);
+    const txt = document.getElementById('txt-' + id);
+    const tbl = document.getElementById('tbl-' + id);
+    const res = document.getElementById('res-' + id);
+
+    if (state === 'up') {
+      if (dot) { dot.className = 'status-dot up'; }
+      if (txt) { txt.className = 'status-text up'; txt.textContent = '실행중'; }
+      if (tbl) { tbl.style.color = 'var(--green)'; tbl.textContent = '● 실행중'; }
+      if (res) { res.className = 'diag-result ok'; res.textContent = '✓  실행중'; }
+    } else if (state === 'down') {
+      if (dot) { dot.className = 'status-dot down'; }
+      if (txt) { txt.className = 'status-text down'; txt.textContent = '응답없음'; }
+      if (tbl) { tbl.style.color = 'var(--red)'; tbl.textContent = '● 응답없음'; }
+      if (res) { res.className = 'diag-result fail'; res.textContent = '✕  응답없음'; }
+    } else {
+      if (dot) { dot.className = 'status-dot'; }
+      if (txt) { txt.className = 'status-text'; txt.textContent = '확인중'; }
+      if (tbl) { tbl.style.color = 'var(--amber)'; tbl.textContent = '● 확인중'; }
+      if (res) { res.className = 'diag-result checking'; res.textContent = '···  확인중'; }
+    }
+  }
+
+  function checkService(svc) {
+    setStatus(svc.id, 'checking');
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 9000);
+
+    // same-origin fetch to nginx proxy → no CORS, no Private Network Access issue
+    fetch(svc.path, { cache: 'no-store', signal: ctrl.signal })
+      .then(r => {
+        clearTimeout(timer);
+        // nginx 502/503 = service down, 2xx/3xx = up
+        setStatus(svc.id, r.status < 500 ? 'up' : 'down');
+      })
+      .catch(() => {
+        clearTimeout(timer);
+        setStatus(svc.id, 'down');
+      });
+  }
+
+  function runAllChecks() {
+    SERVICES.forEach(checkService);
+  }
+
+  function copyQuery(btn) {
+    const pre = btn.closest('.query-card').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'copied!';
+      btn.style.color = 'var(--green)';
+      setTimeout(() => { btn.textContent = 'copy'; btn.style.color = ''; }, 2000);
+    });
+  }
+
+  runAllChecks();
+  setInterval(runAllChecks, 30000);
+</script>
+</body>
+</html>

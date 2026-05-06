@@ -1,0 +1,32 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "PostgreSQL raw 스키마 - 원시 데이터"
+    schema: raw
+    tables:
+      - name: customers
+        columns:
+          - name: customer_id
+            tests: [unique, not_null]
+          - name: email
+            tests: [unique, not_null]
+
+      - name: products
+        columns:
+          - name: product_id
+            tests: [unique, not_null]
+
+      - name: orders
+        columns:
+          - name: order_id
+            tests: [unique, not_null]
+          - name: status
+            tests:
+              - accepted_values:
+                  values: ['completed', 'cancelled', 'refunded', 'pending']
+
+      - name: marketing_spend
+        columns:
+          - name: id
+            tests: [unique, not_null]

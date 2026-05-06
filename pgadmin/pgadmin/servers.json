@@ -1,0 +1,15 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "MDS - PostgreSQL",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "airflow",
+      "Username": "airflow",
+      "Password": "airflow",
+      "SSLMode": "prefer",
+      "Comment": "Modern Data Stack 로컬 PostgreSQL"
+    }
+  }
+}
