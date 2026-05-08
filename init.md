@@ -8,3 +8,8 @@
 
 
 
+SELECT
+  year_month,
+  total_revenue
+FROM marts.monthly_sales
+ORDER BY year_month;
