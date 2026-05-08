@@ -31,4 +31,24 @@ ORDER BY year_month;
 <img width="1055" height="607" alt="image" src="https://github.com/user-attachments/assets/81ff2d6a-cf14-471a-950c-a505be813868" />
 
 
-
+PS C:\WINDOWS\system32> docker exec -it mds_airflow_web bash
+airflow@165b4fd98717:/opt/airflow$ # 2. 커넥션 등록
+airflow connections add postgres_mds \
+  --conn-type postgres \
+  --conn-host mds_postgres \
+  --conn-schema airflow \
+  --conn-login airflow \
+  --conn-password airflow \
+  --conn-port 5432
+[2026-05-08T03:27:03.899+0000] {providers_manager.py:283} INFO - Optional provider feature disabled when importing 'airflow.providers.google.leveldb.hooks.leveldb.LevelDBHook' from 'apache-airflow-providers-google' package
+Successfully added `conn_id`=postgres_mds : postgres://airflow:******@mds_postgres:5432/airflow
+airflow@165b4fd98717:/opt/airflow$ # 3. 등록 확인
+airflow connections get postgres_mds
+   |              |           |             |              |         |         |          |      |              | is_extra_enc |              |
+id | conn_id      | conn_type | description | host         | schema  | login   | password | port | is_encrypted | rypted       | extra_dejson | get_uri
+===+==============+===========+=============+==============+=========+=========+==========+======+==============+==============+==============+===============
+3  | postgres_mds | postgres  | None        | mds_postgres | airflow | airflow | airflow  | 5432 | True         | True         | {}           | postgres://air
+   |              |           |             |              |         |         |          |      |              |              |              | flow:airflow@m
+   |              |           |             |              |         |         |          |      |              |              |              | ds_postgres:54
+   |              |           |             |              |         |         |          |      |              |              |              | 32/airflow
+   
