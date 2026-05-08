@@ -52,3 +52,4 @@ id | conn_id      | conn_type | description | host         | schema  | login   |
    |              |           |             |              |         |         |          |      |              |              |              | ds_postgres:54
    |              |           |             |              |         |         |          |      |              |              |              | 32/airflow
    
+<img width="1167" height="360" alt="image" src="https://github.com/user-attachments/assets/12530dc9-bab0-4089-baaa-8c81e578bed5" />
