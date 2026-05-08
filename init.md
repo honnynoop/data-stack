@@ -13,3 +13,6 @@ SELECT
   total_revenue
 FROM marts.monthly_sales
 ORDER BY year_month;
+
+
+<img width="957" height="728" alt="image" src="https://github.com/user-attachments/assets/b32d966b-729f-4407-b88e-af03b4abb8ad" />
