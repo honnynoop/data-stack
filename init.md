@@ -89,4 +89,5 @@ PS C:\Projects\data-stack\update> docker exec mds_airflow_web python /opt/airflo
 PS C:\Projects\data-stack\update> docker exec -it mds_airflow_web bash
 airflow@165b4fd98717:/opt/airflow$ cd /opt/dbt
 
+<img width="1629" height="814" alt="image" src="https://github.com/user-attachments/assets/904f56ac-1b1e-4a13-a196-3a986a8720ab" />
 
